@@ -66,7 +66,6 @@
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            text-decoration: none;
         }
         .btn-select:active {
             opacity: 0.85;
@@ -80,65 +79,49 @@
     <div class="catalog" id="catalog"></div>
 
     <script>
-        const tg = window.Telegram && window.Telegram.WebApp;
+        var tg = window.Telegram && window.Telegram.WebApp;
         if (tg) {
             tg.ready();
             tg.expand();
         }
 
-        const BOT_USERNAME = "awbagsbot";
+        var BOT_USERNAME = "awbagsbot";
 
-        const catalog = [
-            {id: "sstyle_мини_beige_mix", name: "SStyle мини beige mix", image: "SStyle мини beige mix.jpg"},
+        var catalog = [
+            {id: "sstyle_mini_beige_mix", name: "SStyle мини beige mix", image: "SStyle мини beige mix.jpg"},
             {id: "vogue_bag_long_xs_brown", name: "Vogue bag Long XS brown", image: "Vogue bag Long XS brown.jpg"},
             {id: "vogue_bag_m_beige", name: "Vogue bag M beige", image: "Vogue bag M beige.jpg"},
-            {id: "несессер_из_эконубука_ohra", name: "Несессер из эко-нубука ohra", image: "Несессер из эко-нубука ohra.jpg"}
+            {id: "nesesser_iz_eko-nubuka_ohra", name: "Несессер из эко-нубука ohra", image: "Несессер из эко-нубука ohra.jpg"}
         ];
 
-        function selectBag(bag) {
-            const deepLink = "https://t.me/" + BOT_USERNAME + "?start=bag_" + encodeURIComponent(bag.id);
+        function selectBag(bagId) {
+            var deepLink = "https://t.me/" + BOT_USERNAME + "?start=bag_" + bagId;
 
             if (tg && tg.openTelegramLink) {
                 tg.openTelegramLink(deepLink);
-                setTimeout(function() { tg.close(); }, 500);
+                setTimeout(function() { tg.close(); }, 300);
             } else {
                 window.location.href = deepLink;
             }
         }
 
         function renderCatalog() {
-            const container = document.getElementById('catalog');
+            var container = document.getElementById('catalog');
 
-            catalog.forEach(function(bag) {
-                const card = document.createElement('div');
+            for (var i = 0; i < catalog.length; i++) {
+                var bag = catalog[i];
+                var card = document.createElement('div');
                 card.className = 'card';
 
-                const img = document.createElement('img');
-                img.src = encodeURI(bag.image);
-                img.alt = bag.name;
-                img.onerror = function() {
-                    this.style.height = '80px';
-                };
+                card.innerHTML =
+                    '<img src="' + encodeURI(bag.image) + '" alt="' + bag.name + '" onerror="this.style.height=\'80px\'">' +
+                    '<div class="card-body">' +
+                    '<h3>' + bag.name + '</h3>' +
+                    '<button class="btn-select" onclick="selectBag(\'' + bag.id + '\')">👜 Выбрать эту сумку</button>' +
+                    '</div>';
 
-                const body = document.createElement('div');
-                body.className = 'card-body';
-
-                const title = document.createElement('h3');
-                title.textContent = bag.name;
-
-                const btn = document.createElement('button');
-                btn.className = 'btn-select';
-                btn.textContent = '👜 Выбрать эту сумку';
-                btn.addEventListener('click', function() {
-                    selectBag(bag);
-                });
-
-                body.appendChild(title);
-                body.appendChild(btn);
-                card.appendChild(img);
-                card.appendChild(body);
                 container.appendChild(card);
-            });
+            }
         }
 
         renderCatalog();
