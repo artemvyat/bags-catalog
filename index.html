@@ -6,134 +6,142 @@
     <title>Каталог сумок</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            min-height: 100vh;
-            -webkit-tap-highlight-color: transparent;
+            background: var(--tg-theme-bg-color, #1a1a2e);
+            color: var(--tg-theme-text-color, #ffffff);
+            padding: 12px;
+            padding-bottom: 40px;
         }
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
-        .hidden { display: none !important; }
-        h1 { text-align: center; margin-bottom: 20px; font-size: 22px; font-weight: 700; }
-        .catalog-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .bag-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 14px; overflow: hidden; cursor: pointer;
-            transition: transform 0.15s ease; -webkit-user-select: none; user-select: none;
-            animation: fadeIn 0.3s ease forwards;
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 6px;
         }
-        .bag-card:active { transform: scale(0.96); }
-        .bag-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
-        .card-name { padding: 10px 8px; font-size: 13px; font-weight: 600; text-align: center; line-height: 1.3; }
-        .back-btn {
-            background: none; border: none; color: var(--tg-theme-link-color, #3390ec);
-            font-size: 16px; font-weight: 500; cursor: pointer; padding: 8px 0; margin-bottom: 12px;
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #888);
+            margin-bottom: 16px;
         }
-        .confirm-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 16px; overflow: hidden; text-align: center;
+        .catalog {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
-        .confirm-card img { width: 100%; max-height: 55vh; object-fit: contain; display: block; background: #f8f8f8; }
-        .confirm-card h2 { padding: 16px 16px 4px; font-size: 20px; font-weight: 700; }
-        .confirm-hint { padding: 4px 16px 16px; font-size: 14px; color: var(--tg-theme-hint-color, #999); }
-        .confirm-btn {
-            width: calc(100% - 32px); margin: 0 16px 20px; padding: 16px;
-            font-size: 16px; font-weight: 700; border: none; border-radius: 12px;
-            background: var(--tg-theme-button-color, #3390ec);
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #16213e);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+            background: #2a2a4a;
+        }
+        .card-body {
+            padding: 14px;
+        }
+        .card-body h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+        .btn-select {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-theme-button-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
             color: var(--tg-theme-button-text-color, #ffffff);
-            cursor: pointer; transition: opacity 0.15s;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
         }
-        .confirm-btn:active { opacity: 0.7; }
-        .confirm-btn.loading { opacity: 0.6; pointer-events: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .bag-card:nth-child(2) { animation-delay: 0.05s; }
-        .bag-card:nth-child(3) { animation-delay: 0.1s; }
-        .bag-card:nth-child(4) { animation-delay: 0.15s; }
+        .btn-select:active {
+            opacity: 0.85;
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
-    <div class="container" id="catalog-screen">
-        <h1>👜 Выберите модель</h1>
-        <div id="catalog" class="catalog-grid"></div>
-    </div>
-
-    <div class="container hidden" id="confirm-screen">
-        <button class="back-btn" id="back-btn">← Назад</button>
-        <div class="confirm-card">
-            <img id="confirm-image" src="" alt="">
-            <h2 id="confirm-name"></h2>
-            <p class="confirm-hint">Эта сумка будет примерена на вашем фото</p>
-            <button id="confirm-btn" class="confirm-btn">✨ Примерить эту сумку</button>
-        </div>
-    </div>
+    <h1>👜 Каталог сумок</h1>
+    <p class="subtitle">Выберите модель для примерки</p>
+    <div class="catalog" id="catalog"></div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
 
-                const catalog = [
+        const BOT_USERNAME = "awbagsbot";
+
+        const catalog = [
             {id: "sstyle_мини_beige_mix", name: "SStyle мини beige mix", image: "SStyle мини beige mix.jpg"},
             {id: "vogue_bag_long_xs_brown", name: "Vogue bag Long XS brown", image: "Vogue bag Long XS brown.jpg"},
             {id: "vogue_bag_m_beige", name: "Vogue bag M beige", image: "Vogue bag M beige.jpg"},
             {id: "несессер_из_эконубука_ohra", name: "Несессер из эко-нубука ohra", image: "Несессер из эко-нубука ohra.jpg"}
         ];
 
-        let selectedBag = null;
+        function selectBag(bag) {
+            const deepLink = `https://t.me/${BOT_USERNAME}?start=bag_${bag.id}`;
 
-        const catalogScreen = document.getElementById('catalog-screen');
-        const confirmScreen = document.getElementById('confirm-screen');
-        const catalogGrid = document.getElementById('catalog');
-        const confirmImage = document.getElementById('confirm-image');
-        const confirmName = document.getElementById('confirm-name');
-        const confirmBtn = document.getElementById('confirm-btn');
-        const backBtn = document.getElementById('back-btn');
+            if (tg) {
+                tg.openTelegramLink(deepLink);
+                tg.close();
+            } else {
+                window.open(deepLink, '_blank');
+            }
+        }
 
         function renderCatalog() {
-            catalogGrid.innerHTML = catalog.map(bag =>
-                '<div class="bag-card" onclick="selectBag(\'' + bag.id + '\')">' +
-                '<img src="' + encodeURI(bag.image) + '" alt="' + bag.name + '" loading="lazy">' +
-                '<div class="card-name">' + bag.name + '</div></div>'
-            ).join('');
+            const container = document.getElementById('catalog');
+
+            catalog.forEach(bag => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const img = document.createElement('img');
+                img.src = encodeURI(bag.image);
+                img.alt = bag.name;
+                img.onerror = function() {
+                    this.style.height = '80px';
+                    this.style.display = 'flex';
+                    this.alt = '📷 Фото';
+                };
+
+                const body = document.createElement('div');
+                body.className = 'card-body';
+
+                const title = document.createElement('h3');
+                title.textContent = bag.name;
+
+                const btn = document.createElement('button');
+                btn.className = 'btn-select';
+                btn.textContent = '👜 Выбрать эту сумку';
+                btn.onclick = function() { selectBag(bag); };
+
+                body.appendChild(title);
+                body.appendChild(btn);
+                card.appendChild(img);
+                card.appendChild(body);
+                container.appendChild(card);
+            });
         }
-
-        function selectBag(bagId) {
-            selectedBag = catalog.find(b => b.id === bagId);
-            if (!selectedBag) return;
-            try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-            confirmImage.src = encodeURI(selectedBag.image);
-            confirmName.textContent = selectedBag.name;
-            catalogScreen.classList.add('hidden');
-            confirmScreen.classList.remove('hidden');
-            try { tg.BackButton.show(); } catch(e) {}
-        }
-
-        confirmBtn.addEventListener('click', function() {
-            if (!selectedBag) return;
-            try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
-            confirmBtn.classList.add('loading');
-            confirmBtn.textContent = '⏳ Отправка...';
-            tg.sendData(JSON.stringify({
-                action: 'select_bag',
-                bag_id: selectedBag.id,
-                bag_name: selectedBag.name
-            }));
-        });
-
-        function goBack() {
-            confirmScreen.classList.add('hidden');
-            catalogScreen.classList.remove('hidden');
-            selectedBag = null;
-            try { tg.BackButton.hide(); tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-        }
-
-        backBtn.addEventListener('click', goBack);
-        try { tg.BackButton.onClick(goBack); } catch(e) {}
 
         renderCatalog();
     </script>
 </body>
 </html>
-
