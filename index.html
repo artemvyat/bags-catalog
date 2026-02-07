@@ -58,7 +58,7 @@
             display: block;
             width: 100%;
             padding: 14px;
-            background: var(--tg-theme-button-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+            background: var(--tg-theme-button-color, #667eea);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
             border-radius: 12px;
@@ -96,20 +96,20 @@
         ];
 
         function selectBag(bag) {
-            const deepLink = `https://t.me/${BOT_USERNAME}?start=bag_${bag.id}`;
+            const deepLink = "https://t.me/" + BOT_USERNAME + "?start=bag_" + encodeURIComponent(bag.id);
 
-            if (tg) {
+            if (tg && tg.openTelegramLink) {
                 tg.openTelegramLink(deepLink);
-                tg.close();
+                setTimeout(function() { tg.close(); }, 500);
             } else {
-                window.open(deepLink, '_blank');
+                window.location.href = deepLink;
             }
         }
 
         function renderCatalog() {
             const container = document.getElementById('catalog');
 
-            catalog.forEach(bag => {
+            catalog.forEach(function(bag) {
                 const card = document.createElement('div');
                 card.className = 'card';
 
@@ -118,8 +118,6 @@
                 img.alt = bag.name;
                 img.onerror = function() {
                     this.style.height = '80px';
-                    this.style.display = 'flex';
-                    this.alt = '📷 Фото';
                 };
 
                 const body = document.createElement('div');
@@ -131,7 +129,9 @@
                 const btn = document.createElement('button');
                 btn.className = 'btn-select';
                 btn.textContent = '👜 Выбрать эту сумку';
-                btn.onclick = function() { selectBag(bag); };
+                btn.addEventListener('click', function() {
+                    selectBag(bag);
+                });
 
                 body.appendChild(title);
                 body.appendChild(btn);
